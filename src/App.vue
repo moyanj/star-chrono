@@ -162,7 +162,7 @@ function setTab(tabName: string) {
   </div>
   <div align="center">
     <p>© 2025 <a href="https://github.com/moyanj">MoYanj</a> | <a
-        href="https://github.com/ChenYFan/StarRailVersionEvents">GitHub</a></p>
+        href="https://github.com/moyanj/star-chrono">GitHub</a></p>
   </div>
 </template>
 
