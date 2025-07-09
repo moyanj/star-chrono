@@ -106,7 +106,7 @@ GitHub 地址：[https://github.com/moyanj/star-chrono](https://github.com/moyan
 ## 👥 联系作者
 
 - 🌐 GitHub：[@moyanj](https://github.com/moyanj)
-- 📧 邮箱：chenyfan@outlook.com
+- 📧 邮箱：moyanjdc@qq.com
 
 ---
 
