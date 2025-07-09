@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, type ComputedRef } from 'vue';
-import { generateVersionEvents, type EventItem, INITIAL_START_VERSION, INITIAL_START_DATE } from './utils/events';
+import { generateVersionEvents, type EventItem, INITIAL_START_VERSION, INITIAL_START_DATE, EVENT_OFFSETS } from './utils/events';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
@@ -50,6 +50,28 @@ const dateRangeEvents: ComputedRef<EventItem[]> = computed(() => {
   }).sort((a: EventItem, b: EventItem) => dayjs(a.date).diff(dayjs(b.date)));
 });
 
+// 4. 按事件类型筛选
+const eventTypes = computed(() => {
+  // 从EVENT_OFFSETS中获取所有事件类型
+  return Object.keys(EVENT_OFFSETS);
+});
+const selectedEventType = ref(''); // 默认不选择任何事件类型
+const timeFrameYears = ref(1); // 默认查看未来一年内所选事件类型的事件
+
+const eventTypeEvents: ComputedRef<EventItem[]> = computed(() => {
+  if (!selectedEventType.value) return [];
+
+  const today = dayjs().startOf('day');
+  const endDate = today.add(timeFrameYears.value, 'year').endOf('day');
+
+  return allEvents.value.filter((event: EventItem) => {
+    const eventDate = dayjs(event.date);
+    return eventDate.isSameOrAfter(today) &&
+      eventDate.isBefore(endDate) &&
+      event.event.includes(selectedEventType.value);
+  }).sort((a: EventItem, b: EventItem) => dayjs(a.date).diff(dayjs(b.date)));
+});
+
 // --- 生命周期钩子 ---
 onMounted(() => {
   // 页面加载时，生成足够多的事件数据
@@ -74,6 +96,9 @@ function setTab(tabName: string) {
     </button>
     <button :class="{ 'active': activeTab === 'date' }" @click="setTab('date')" class="tab-button">
       按日期范围查询
+    </button>
+    <button :class="{ 'active': activeTab === 'eventType' }" @click="setTab('eventType')" class="tab-button">
+      按事件类型筛选
     </button>
   </div>
 
@@ -159,6 +184,38 @@ function setTab(tabName: string) {
       </div>
       <p v-else>请输入日期和范围，或该日期范围内暂无事件。</p>
     </section>
+
+    <!-- 按事件类型筛选 -->
+    <section v-if="activeTab === 'eventType'" class="section">
+      <h2>🔖 按事件类型筛选</h2>
+      <div class="controls">
+        <label for="selectedEventType">选择事件类型: </label>
+        <select id="selectedEventType" v-model="selectedEventType">
+          <option value="">-- 请选择事件类型 --</option>
+          <option v-for="type in eventTypes" :key="type" :value="type">{{ type }}</option>
+        </select>
+        <label for="timeFrameYears">查看未来: </label>
+        <input type="number" id="timeFrameYears" v-model.number="timeFrameYears" min="1" step="1">
+        年内的事件
+      </div>
+      <div v-if="eventTypeEvents.length">
+        <table>
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>版本事件</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="event in eventTypeEvents" :key="event.date + event.event">
+              <td>{{ event.date }}</td>
+              <td>{{ event.event }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p v-else>请选择事件类型或该事件类型暂无未来事件。</p>
+    </section>
   </div>
   <div align="center">
     <p>© 2025 <a href="https://github.com/moyanj">MoYanj</a> | <a
@@ -213,7 +270,8 @@ label {
 
 input[type="text"],
 input[type="number"],
-input[type="date"] {
+input[type="date"],
+select {
   padding: 8px 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
