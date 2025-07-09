@@ -226,6 +226,34 @@ function setTab(tabName: string) {
 </template>
 
 <style>
+/* 优化滚动条样式 - 不占用空间 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+html {
+  overflow-y: overlay; /* 使滚动条覆盖在内容上方 */
+  scrollbar-width: thin; /* Firefox 支持 */
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent; /* Firefox 支持 */
+}
+
+body {
+  overflow-x: hidden;
+}
 /* 基础样式 */
 body {
   font-family: "MiSans",
@@ -301,7 +329,7 @@ select {
 }
 
 input[type="number"] {
-  width: 80px;
+  width: 50px;
 }
 
 /* 表格响应式设计 */
@@ -320,8 +348,7 @@ table {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   overflow: hidden;
-  min-width: 300px;
-  /* 确保表格不会太窄 */
+  min-width: 200px;
 }
 
 th,
@@ -377,7 +404,7 @@ a:hover {
   font-weight: bold;
   color: #555;
   border-radius: 8px 8px 0 0;
-  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  transition: background-color 0.3s, color 0.3s;
   margin: 0 2px;
   flex: 1 1 auto;
   text-align: center;
@@ -453,6 +480,66 @@ a:hover {
   td {
     padding: 8px 6px;
     font-size: 0.9rem;
+  }
+}
+
+/* 表格行的淡入动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+tbody tr {
+  animation: fadeIn 0.5s ease-in-out;
+  animation-fill-mode: both;
+}
+
+/* 为表格行设置级联延迟 */
+tbody tr:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+tbody tr:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+tbody tr:nth-child(3) {
+  animation-delay: 0.15s;
+}
+
+tbody tr:nth-child(4) {
+  animation-delay: 0.2s;
+}
+
+tbody tr:nth-child(5) {
+  animation-delay: 0.25s;
+}
+
+tbody tr:nth-child(n+6) {
+  animation-delay: 0.3s;
+}
+
+/* 标签页切换的平滑过渡动画 */
+.section {
+  animation: fadeSection 0.4s ease-out;
+}
+
+@keyframes fadeSection {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 </style>
