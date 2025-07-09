@@ -1,6 +1,6 @@
 # 🌌 StarChrono — 星穹事件簿
 
-> *《崩坏：星穹铁道》版本与活动事件预测工具*
+> *《崩坏：星穹铁道》版本事件预测工具*
 
 ![GitHub license](https://img.shields.io/github/license/moyanj/star-chrono)
 ![GitHub stars](https://img.shields.io/github/stars/moyanj/star-chrono)
