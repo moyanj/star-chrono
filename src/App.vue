@@ -63,7 +63,7 @@ function setTab(tabName: string) {
 </script>
 
 <template>
-  <h1>星穹事件簿</h1>
+  <h1>StarChrono - 星穹事件簿</h1>
 
   <div class="tabs">
     <button :class="{ 'tab-button': true, 'active': activeTab === 'future' }" @click="setTab('future')">
