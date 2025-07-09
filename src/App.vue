@@ -96,10 +96,10 @@ function setTab(tabName: string) {
         按版本
       </button>
       <button :class="{ 'active': activeTab === 'date' }" @click="setTab('date')" class="tab-button">
-        按日期范围
+        按日期
       </button>
       <button :class="{ 'active': activeTab === 'eventType' }" @click="setTab('eventType')" class="tab-button">
-        按事件类型
+        按事件
       </button>
     </div>
 
