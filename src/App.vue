@@ -66,13 +66,13 @@ function setTab(tabName: string) {
   <h1>StarChrono - 星穹事件簿</h1>
 
   <div class="tabs">
-    <button :class="{ 'tab-button': true, 'active': activeTab === 'future' }" @click="setTab('future')">
+    <button :class="{ 'active': activeTab === 'future' }" @click="setTab('future')" class="tab-button">
       未来事件
     </button>
-    <button :class="{ 'tab-button': true, 'active': activeTab === 'version' }" @click="setTab('version')">
+    <button :class="{ 'active': activeTab === 'version' }" @click="setTab('version')" class="tab-button">
       按版本查询
     </button>
-    <button :class="{ 'tab-button': true, 'active': activeTab === 'date' }" @click="setTab('date')">
+    <button :class="{ 'active': activeTab === 'date' }" @click="setTab('date')" class="tab-button">
       按日期范围查询
     </button>
   </div>
@@ -274,8 +274,6 @@ a:hover {
 .tabs {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
-  border-bottom: 2px solid #e0e0e0;
 }
 
 .tab-button {
