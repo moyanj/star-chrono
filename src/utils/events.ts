@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 
 // 精确偏移量配置（基于上半开启日）
 export const EVENT_OFFSETS: { [key: string]: number } = {
-    "天外卫星通信": -57,  // 精确匹配数据
+    "天外卫星通信": -57,
     "测试服": -43,
     "前瞻特别节目": -12,
     "角色PV": -6,
@@ -62,7 +62,7 @@ export function generateVersionEvents(startVersion: string, startDate: string, n
             continue;
         }
 
-        // 生成事件（角色立绘、测试服、前瞻等）
+        // 生成事件
         for (const eventName in EVENT_OFFSETS) {
             const offset = EVENT_OFFSETS[eventName];
             const eventDate = nextStart.add(offset, 'day');
@@ -76,15 +76,10 @@ export function generateVersionEvents(startVersion: string, startDate: string, n
         currentDate = nextStart; // 更新当前版本开启日期，用于下一个版本的计算
     }
 
-    // 过滤掉未来日期
-    const today = dayjs().startOf('day');
-    const futureEvents = events.filter(event => dayjs(event.date).isSameOrAfter(today));
-
     // 按照日期排序
     return events.sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
 }
 
-// 示例数据（用于演示，可以根据实际情况修改）
-// 假设星穹铁道 1.0 版本是 2023-04-26
+// 开服时间
 export const INITIAL_START_VERSION = "1.0";
 export const INITIAL_START_DATE = "2023-04-26";

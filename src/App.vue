@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, type ComputedRef } from 'vue';
-import { generateVersionEvents, EventItem, INITIAL_START_VERSION, INITIAL_START_DATE } from './utils/events';
+import { generateVersionEvents, type EventItem, INITIAL_START_VERSION, INITIAL_START_DATE } from './utils/events';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 
@@ -14,7 +14,7 @@ const activeTab = ref('future'); // 默认激活 'future' 标签页
 
 // 1. 查看未来事件
 const futureYears = ref(1); // 默认未来一年
-const futureEvents: ComputedRef<EventItem> = computed(() => {
+const futureEvents: ComputedRef<EventItem[]> = computed(() => {
   const today = dayjs().startOf('day');
   const endDate = today.add(futureYears.value, 'year').endOf('day');
   return allEvents.value.filter((event: EventItem) => {
@@ -25,7 +25,7 @@ const futureEvents: ComputedRef<EventItem> = computed(() => {
 
 // 2. 按版本号查询
 const inputVersion = ref('');
-const versionEvents: ComputedRef<EventItem> = computed(() => {
+const versionEvents: ComputedRef<EventItem[]> = computed(() => {
   console.log(inputVersion.value);
   if (!inputVersion.value || !inputVersion.value.includes(".") || inputVersion.value.length < 3) return [];
 
@@ -38,7 +38,7 @@ const versionEvents: ComputedRef<EventItem> = computed(() => {
 // 3. 按日期范围查询
 const inputDate = ref(dayjs().format('YYYY-MM-DD')); // 默认为今天
 const dateRangeYears = ref(1); // 默认前后一年
-const dateRangeEvents: ComputedRef<EventItem> = computed(() => {
+const dateRangeEvents: ComputedRef<EventItem[]> = computed(() => {
   if (!inputDate.value) return [];
   const targetDate = dayjs(inputDate.value).startOf('day');
   const startDate = targetDate.subtract(dateRangeYears.value, 'year').startOf('day');
@@ -160,11 +160,14 @@ function setTab(tabName: string) {
       <p v-else>请输入日期和范围，或该日期范围内暂无事件。</p>
     </section>
   </div>
+  <div align="center">
+    <p>© 2025 <a href="https://github.com/moyanj">MoYanj</a> | <a
+        href="https://github.com/ChenYFan/StarRailVersionEvents">GitHub</a></p>
+  </div>
 </template>
 
 <style>
-/* 保持原有样式 */
-#app {
+body {
   font-family: "MiSans",
     "Helvetica Neue",
     Helvetica,
@@ -177,12 +180,8 @@ function setTab(tabName: string) {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
   margin: 20px;
-  background-color: #f9f9f9;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 h1 {
@@ -260,6 +259,15 @@ tr:hover {
 p {
   color: #666;
   font-style: italic;
+}
+
+a {
+  color: #42b983;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
 
 /* --- 标签页样式 --- */
