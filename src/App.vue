@@ -85,145 +85,148 @@ function setTab(tabName: string) {
 </script>
 
 <template>
-  <h1>StarChrono - 星穹事件簿</h1>
+  <div class="container">
+    <h1>StarChrono - 星穹事件簿</h1>
 
-  <div class="tabs">
-    <button :class="{ 'active': activeTab === 'future' }" @click="setTab('future')" class="tab-button">
-      未来事件
-    </button>
-    <button :class="{ 'active': activeTab === 'version' }" @click="setTab('version')" class="tab-button">
-      按版本查询
-    </button>
-    <button :class="{ 'active': activeTab === 'date' }" @click="setTab('date')" class="tab-button">
-      按日期范围查询
-    </button>
-    <button :class="{ 'active': activeTab === 'eventType' }" @click="setTab('eventType')" class="tab-button">
-      按事件类型筛选
-    </button>
-  </div>
+    <div class="tabs">
+      <button :class="{ 'active': activeTab === 'future' }" @click="setTab('future')" class="tab-button">
+        未来事件
+      </button>
+      <button :class="{ 'active': activeTab === 'version' }" @click="setTab('version')" class="tab-button">
+        按版本
+      </button>
+      <button :class="{ 'active': activeTab === 'date' }" @click="setTab('date')" class="tab-button">
+        按日期范围
+      </button>
+      <button :class="{ 'active': activeTab === 'eventType' }" @click="setTab('eventType')" class="tab-button">
+        按事件类型
+      </button>
+    </div>
 
-  <div class="tab-content">
-    <!-- 未来事件概览 -->
-    <section v-if="activeTab === 'future'" class="section">
-      <h2>🎉 未来事件概览</h2>
-      <div class="controls">
-        <label for="futureYears">查看未来: </label>
-        <input type="number" id="futureYears" v-model.number="futureYears" min="0" step="1">
-        年内的事件
-      </div>
-      <div v-if="futureEvents.length">
-        <table>
-          <thead>
-            <tr>
-              <th>日期</th>
-              <th>版本事件</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="event in futureEvents" :key="event.date + event.event">
-              <td>{{ event.date }}</td>
-              <td>{{ event.event }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p v-else>暂无未来事件数据。</p>
-    </section>
+    <div class="tab-content">
+      <!-- 未来事件概览 -->
+      <section v-if="activeTab === 'future'" class="section">
+        <h2>🎉 未来事件概览</h2>
+        <div class="controls">
+          <label for="futureYears">查看未来: </label>
+          <input type="number" id="futureYears" v-model.number="futureYears" min="0" step="1">
+          年内的事件
+        </div>
+        <div v-if="futureEvents.length" class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th>版本事件</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="event in futureEvents" :key="event.date + event.event">
+                <td>{{ event.date }}</td>
+                <td>{{ event.event }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p v-else>暂无未来事件数据。</p>
+      </section>
 
-    <!-- 按版本号查询 -->
-    <section v-if="activeTab === 'version'" class="section">
-      <h2>🔍 按版本号查询</h2>
-      <div class="controls">
-        <label for="inputVersion">输入版本号 (如: 2.0): </label>
-        <input type="text" id="inputVersion" v-model="inputVersion" placeholder="例: 2.0">
-      </div>
-      <div v-if="versionEvents.length">
-        <table>
-          <thead>
-            <tr>
-              <th>日期</th>
-              <th>版本事件</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="event in versionEvents" :key="event.date + event.event">
-              <td>{{ event.date }}</td>
-              <td>{{ event.event }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p v-else>请输入版本号或该版本暂无事件。</p>
-    </section>
+      <!-- 按版本号查询 -->
+      <section v-if="activeTab === 'version'" class="section">
+        <h2>🔍 按版本号查询</h2>
+        <div class="controls">
+          <label for="inputVersion">输入版本号 (如: 2.0): </label>
+          <input type="text" id="inputVersion" v-model="inputVersion" placeholder="例: 2.0">
+        </div>
+        <div v-if="versionEvents.length" class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th>版本事件</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="event in versionEvents" :key="event.date + event.event">
+                <td>{{ event.date }}</td>
+                <td>{{ event.event }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p v-else>请输入版本号或该版本暂无事件。</p>
+      </section>
 
-    <!-- 按日期范围查询 -->
-    <section v-if="activeTab === 'date'" class="section">
-      <h2>🗓️ 按日期范围查询</h2>
-      <div class="controls">
-        <label for="inputDate">输入中心日期: </label>
-        <input type="date" id="inputDate" v-model="inputDate">
-        <label for="dateRangeYears">显示前后: </label>
-        <input type="number" id="dateRangeYears" v-model.number="dateRangeYears" min="0" step="1">
-        年内的事件
-      </div>
-      <div v-if="dateRangeEvents.length">
-        <table>
-          <thead>
-            <tr>
-              <th>日期</th>
-              <th>版本事件</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="event in dateRangeEvents" :key="event.date + event.event">
-              <td>{{ event.date }}</td>
-              <td>{{ event.event }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p v-else>请输入日期和范围，或该日期范围内暂无事件。</p>
-    </section>
+      <!-- 按日期范围查询 -->
+      <section v-if="activeTab === 'date'" class="section">
+        <h2>🗓️ 按日期范围查询</h2>
+        <div class="controls">
+          <label for="inputDate">输入中心日期: </label>
+          <input type="date" id="inputDate" v-model="inputDate">
+          <label for="dateRangeYears">显示前后: </label>
+          <input type="number" id="dateRangeYears" v-model.number="dateRangeYears" min="0" step="1">
+          年内的事件
+        </div>
+        <div v-if="dateRangeEvents.length" class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th>版本事件</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="event in dateRangeEvents" :key="event.date + event.event">
+                <td>{{ event.date }}</td>
+                <td>{{ event.event }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p v-else>请输入日期和范围，或该日期范围内暂无事件。</p>
+      </section>
 
-    <!-- 按事件类型筛选 -->
-    <section v-if="activeTab === 'eventType'" class="section">
-      <h2>🔖 按事件类型筛选</h2>
-      <div class="controls">
-        <label for="selectedEventType">选择事件类型: </label>
-        <select id="selectedEventType" v-model="selectedEventType">
-          <option value="">-- 请选择事件类型 --</option>
-          <option v-for="type in eventTypes" :key="type" :value="type">{{ type }}</option>
-        </select>
-        <label for="timeFrameYears">查看未来: </label>
-        <input type="number" id="timeFrameYears" v-model.number="timeFrameYears" min="1" step="1">
-        年内的事件
-      </div>
-      <div v-if="eventTypeEvents.length">
-        <table>
-          <thead>
-            <tr>
-              <th>日期</th>
-              <th>版本事件</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="event in eventTypeEvents" :key="event.date + event.event">
-              <td>{{ event.date }}</td>
-              <td>{{ event.event }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <p v-else>请选择事件类型或该事件类型暂无未来事件。</p>
-    </section>
-  </div>
-  <div align="center">
-    <p>© 2025 <a href="https://github.com/moyanj">MoYanj</a> | <a
-        href="https://github.com/moyanj/star-chrono">GitHub</a></p>
+      <!-- 按事件类型筛选 -->
+      <section v-if="activeTab === 'eventType'" class="section">
+        <h2>🔖 按事件类型筛选</h2>
+        <div class="controls">
+          <label for="selectedEventType">选择事件类型: </label>
+          <select id="selectedEventType" v-model="selectedEventType">
+            <option value="">-- 请选择事件类型 --</option>
+            <option v-for="type in eventTypes" :key="type" :value="type">{{ type }}</option>
+          </select>
+          <label for="timeFrameYears">查看未来: </label>
+          <input type="number" id="timeFrameYears" v-model.number="timeFrameYears" min="1" step="1">
+          年内的事件
+        </div>
+        <div v-if="eventTypeEvents.length" class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>日期</th>
+                <th>版本事件</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="event in eventTypeEvents" :key="event.date + event.event">
+                <td>{{ event.date }}</td>
+                <td>{{ event.event }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p v-else>请选择事件类型或该事件类型暂无未来事件。</p>
+      </section>
+    </div>
+    <div align="center">
+      <p>© 2025 <a href="https://github.com/moyanj">MoYanj</a> | <a
+          href="https://github.com/moyanj/star-chrono">GitHub</a></p>
+    </div>
   </div>
 </template>
 
 <style>
+/* 基础样式 */
 body {
   font-family: "MiSans",
     "Helvetica Neue",
@@ -237,14 +240,26 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  margin: 20px;
-  padding: 20px;
+  margin: 0;
+  padding: 10px;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* 响应式容器 */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+  box-sizing: border-box;
 }
 
 h1 {
   text-align: center;
   color: #34495e;
-  margin-bottom: 30px;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
 }
 
 h2 {
@@ -253,8 +268,10 @@ h2 {
   border-bottom: 2px solid #42b983;
   padding-bottom: 10px;
   margin-bottom: 20px;
+  font-size: 1.5rem;
 }
 
+/* 控制面板响应式设计 */
 .controls {
   margin-bottom: 20px;
   display: flex;
@@ -266,22 +283,36 @@ h2 {
 label {
   font-weight: bold;
   color: #555;
+  margin-right: 5px;
 }
 
 input[type="text"],
 input[type="number"],
 input[type="date"],
 select {
-  padding: 8px 12px;
+  padding: 10px 12px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 1em;
-  width: 180px;
+  font-size: 16px;
+  /* 移动端更友好的字体大小 */
+  width: 100%;
+  max-width: 180px;
   box-sizing: border-box;
+  -webkit-appearance: none;
+  /* 移除iOS默认样式 */
 }
 
 input[type="number"] {
   width: 80px;
+}
+
+/* 表格响应式设计 */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  /* 允许在小屏幕上水平滚动 */
+  -webkit-overflow-scrolling: touch;
+  /* 提升iOS滚动体验 */
 }
 
 table {
@@ -291,12 +322,14 @@ table {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   overflow: hidden;
+  min-width: 300px;
+  /* 确保表格不会太窄 */
 }
 
 th,
 td {
   border: 1px solid #ddd;
-  padding: 10px;
+  padding: 12px 10px;
   text-align: left;
 }
 
@@ -328,25 +361,31 @@ a:hover {
   text-decoration: underline;
 }
 
-/* --- 标签页样式 --- */
+/* 标签页响应式设计 */
 .tabs {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #e0e0e0;
 }
 
 .tab-button {
   background-color: #f0f0f0;
   border: 1px solid #e0e0e0;
   border-bottom: none;
-  padding: 12px 20px;
+  padding: 10px 15px;
   cursor: pointer;
-  font-size: 1.1em;
+  font-size: 0.9rem;
   font-weight: bold;
   color: #555;
   border-radius: 8px 8px 0 0;
   transition: background-color 0.3s, color 0.3s, border-color 0.3s;
   margin: 0 2px;
-  /* 增加按钮之间的间距 */
+  flex: 1 1 auto;
+  text-align: center;
+  min-width: 80px;
 }
 
 .tab-button:hover {
@@ -359,20 +398,66 @@ a:hover {
   border-color: #42b983;
   color: #42b983;
   border-bottom: 2px solid #ffffff;
-  /* 覆盖底部的边框，看起来像选中 */
   position: relative;
   z-index: 1;
-  /* 确保选中标签在上面 */
 }
 
 .tab-content {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  /* 底部圆角 */
-  padding: 20px;
+  padding: 15px;
   background-color: #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   margin-top: -2px;
-  /* 向上微调，与标签页衔接 */
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+  body {
+    padding: 5px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+  }
+
+  h2 {
+    font-size: 1.3rem;
+  }
+
+
+  label {
+    font-size: 0.9rem;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="date"],
+  select {
+    padding: 8px;
+    font-size: 0.9rem;
+    max-width: 120px;
+  }
+
+  input[type="number"] {
+    width: 60px;
+  }
+
+  .tab-button {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    min-width: 60px;
+  }
+
+  .tab-content {
+    padding: 10px;
+  }
+
+  th,
+  td {
+    padding: 8px 6px;
+    font-size: 0.9rem;
+  }
 }
 </style>
