@@ -237,6 +237,7 @@ function setTab(tabName: string) {
 }
 
 ::-webkit-scrollbar-thumb {
+  z-index: 10;
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
 }
@@ -246,14 +247,20 @@ function setTab(tabName: string) {
 }
 
 html {
-  overflow-y: overlay; /* 使滚动条覆盖在内容上方 */
-  scrollbar-width: thin; /* Firefox 支持 */
-  scrollbar-color: rgba(0, 0, 0, 0.2) transparent; /* Firefox 支持 */
+  overflow-y: overlay;
+  /* 使滚动条覆盖在内容上方 */
+  scrollbar-width: thin;
+  /* Firefox 支持 */
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+  /* Firefox 支持 */
+  margin-left: calc(-1 * (100vw - 100%)); /* 防止滚动条出现/消失时页面跳动 */
+  scrollbar-gutter: stable; /* 保持滚动条空间稳定 */
 }
 
 body {
   overflow-x: hidden;
 }
+
 /* 基础样式 */
 body {
   font-family: "MiSans",
