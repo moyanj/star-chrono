@@ -298,8 +298,6 @@ select {
   width: 100%;
   max-width: 180px;
   box-sizing: border-box;
-  -webkit-appearance: none;
-  /* 移除iOS默认样式 */
 }
 
 input[type="number"] {
@@ -366,9 +364,7 @@ a:hover {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 10px;
-  border-bottom: 2px solid #e0e0e0;
+  gap: 2px;
 }
 
 .tab-button {
@@ -425,7 +421,6 @@ a:hover {
   h2 {
     font-size: 1.3rem;
   }
-
 
   label {
     font-size: 0.9rem;
