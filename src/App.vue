@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, type ComputedRef } from 'vue';
+import { ref, computed, onMounted, type ComputedRef, type Ref } from 'vue';
 import { generateVersionEvents, type EventItem, INITIAL_START_VERSION, INITIAL_START_DATE, EVENT_OFFSETS } from './utils/events';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
+import html2canvas from 'html2canvas';
 
 dayjs.extend(isSameOrAfter);
 
@@ -52,7 +53,6 @@ const dateRangeEvents: ComputedRef<EventItem[]> = computed(() => {
 
 // 4. 按事件类型筛选
 const eventTypes = computed(() => {
-    // 从EVENT_OFFSETS中获取所有事件类型
     return Object.keys(EVENT_OFFSETS);
 });
 const selectedEventType = ref(''); // 默认不选择任何事件类型
@@ -74,13 +74,45 @@ const eventTypeEvents: ComputedRef<EventItem[]> = computed(() => {
 
 // --- 生命周期钩子 ---
 onMounted(() => {
-    // 页面加载时，生成足够多的事件数据
-    allEvents.value = generateVersionEvents(INITIAL_START_VERSION, INITIAL_START_DATE, 5026); // 支持到2600年12月24日（559.4版本下半）
+    allEvents.value = generateVersionEvents(INITIAL_START_VERSION, INITIAL_START_DATE, 5026);
 });
 
 // --- 辅助函数 ---
 function setTab(tabName: string) {
     activeTab.value = tabName;
+}
+
+// --- 图片导出功能 ---
+const isExporting = ref(false);
+const futureTableRef = ref<HTMLElement | null>(null);
+const versionTableRef = ref<HTMLElement | null>(null);
+const dateTableRef = ref<HTMLElement | null>(null);
+const eventTypeTableRef = ref<HTMLElement | null>(null);
+
+async function exportToImage(element: HTMLElement | null, filenamePrefix: string) {
+    console.log('导出图片');
+    if (!element || isExporting.value) return;
+    isExporting.value = true;
+    try {
+        html2canvas(element, {
+            backgroundColor: '#ffffff', // 设置背景色以防透明
+            scale: 2, // 提高清晰度
+            useCORS: true, // 允许跨域
+        }).then(canvas => {
+            console.log('导出图片完成');
+            const link = document.createElement('a');
+            const timestamp = dayjs().format('YYYYMMDD-HHmmss');
+            link.href = canvas.toDataURL('image/png');
+            link.download = `${filenamePrefix}_${timestamp}.png`;
+            link.click();
+        });
+
+    } catch (error) {
+        console.error('导出图片失败:', error);
+        alert('导出图片失败，请查看控制台获取更多信息。');
+    } finally {
+        isExporting.value = false;
+    }
 }
 </script>
 
@@ -106,13 +138,19 @@ function setTab(tabName: string) {
         <div class="tab-content">
             <!-- 未来事件概览 -->
             <section v-show="activeTab === 'future'" class="section">
-                <h2>🎉 未来事件概览</h2>
+                <div class="section-header">
+                    <h2>🎉 未来事件概览</h2>
+                    <button @click="exportToImage(futureTableRef, '未来事件')" v-if="futureEvents.length"
+                        :disabled="isExporting" class="export-button">
+                        {{ isExporting ? '正在导出...' : '导出为图片' }}
+                    </button>
+                </div>
                 <div class="controls">
                     <label for="futureYears">查看未来: </label>
                     <input type="number" id="futureYears" v-model.number="futureYears" min="0" step="1">
                     年内的事件
                 </div>
-                <div v-if="futureEvents.length" class="table-container">
+                <div v-if="futureEvents.length" class="table-container" ref="futureTableRef">
                     <table>
                         <thead>
                             <tr>
@@ -133,12 +171,18 @@ function setTab(tabName: string) {
 
             <!-- 按版本号查询 -->
             <section v-show="activeTab === 'version'" class="section">
-                <h2>🔍 按版本号查询</h2>
+                <div class="section-header">
+                    <h2>🔍 按版本号查询</h2>
+                    <button @click="exportToImage(versionTableRef, `版本_${inputVersion}`)" v-if="versionEvents.length"
+                        :disabled="isExporting" class="export-button">
+                        {{ isExporting ? '正在导出...' : '导出为图片' }}
+                    </button>
+                </div>
                 <div class="controls">
                     <label for="inputVersion">输入版本号 (如: 2.0): </label>
                     <input type="text" id="inputVersion" v-model="inputVersion" placeholder="例: 2.0">
                 </div>
-                <div v-if="versionEvents.length" class="table-container">
+                <div v-if="versionEvents.length" class="table-container" ref="versionTableRef">
                     <table>
                         <thead>
                             <tr>
@@ -159,7 +203,13 @@ function setTab(tabName: string) {
 
             <!-- 按日期范围查询 -->
             <section v-show="activeTab === 'date'" class="section">
-                <h2>🗓️ 按日期范围查询</h2>
+                <div class="section-header">
+                    <h2>🗓️ 按日期范围查询</h2>
+                    <button @click="exportToImage(dateTableRef, `日期范围_${inputDate}`)" v-if="dateRangeEvents.length"
+                        :disabled="isExporting" class="export-button">
+                        {{ isExporting ? '正在导出...' : '导出为图片' }}
+                    </button>
+                </div>
                 <div class="controls">
                     <label for="inputDate">输入中心日期: </label>
                     <input type="date" id="inputDate" v-model="inputDate">
@@ -167,7 +217,7 @@ function setTab(tabName: string) {
                     <input type="number" id="dateRangeYears" v-model.number="dateRangeYears" min="0" step="1">
                     年内的事件
                 </div>
-                <div v-if="dateRangeEvents.length" class="table-container">
+                <div v-if="dateRangeEvents.length" class="table-container" ref="dateTableRef">
                     <table>
                         <thead>
                             <tr>
@@ -188,7 +238,13 @@ function setTab(tabName: string) {
 
             <!-- 按事件类型筛选 -->
             <section v-show="activeTab === 'eventType'" class="section">
-                <h2>🔖 按事件类型筛选</h2>
+                <div class="section-header">
+                    <h2>🔖 按事件类型筛选</h2>
+                    <button @click="exportToImage(eventTypeTableRef, `事件类型_${selectedEventType}`)"
+                        v-if="eventTypeEvents.length" :disabled="isExporting" class="export-button">
+                        {{ isExporting ? '正在导出...' : '导出为图片' }}
+                    </button>
+                </div>
                 <div class="controls">
                     <label for="selectedEventType">选择事件类型: </label>
                     <select id="selectedEventType" v-model="selectedEventType">
@@ -199,7 +255,7 @@ function setTab(tabName: string) {
                     <input type="number" id="timeFrameYears" v-model.number="timeFrameYears" min="1" step="1">
                     年内的事件
                 </div>
-                <div v-if="eventTypeEvents.length" class="table-container">
+                <div v-if="eventTypeEvents.length" class="table-container" ref="eventTypeTableRef">
                     <table>
                         <thead>
                             <tr>
@@ -248,15 +304,10 @@ function setTab(tabName: string) {
 
 html {
     overflow-y: overlay;
-    /* 使滚动条覆盖在内容上方 */
     scrollbar-width: thin;
-    /* Firefox 支持 */
     scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
-    /* Firefox 支持 */
     margin-left: calc(-1 * (100vw - 100%));
-    /* 防止滚动条出现/消失时页面跳动 */
     scrollbar-gutter: stable;
-    /* 保持滚动条空间稳定 */
 }
 
 body {
@@ -302,10 +353,42 @@ h1 {
 h2 {
     color: #42b983;
     margin-top: 0;
-    border-bottom: 2px solid #42b983;
     padding-bottom: 10px;
-    margin-bottom: 20px;
+    margin-bottom: 0;
+    /* 调整h2的margin */
     font-size: 1.5rem;
+}
+
+/* 新增: Section 头部样式 */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #42b983;
+}
+
+/* 新增: 导出按钮样式 */
+.export-button {
+    background-color: #42b983;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: bold;
+    transition: background-color 0.3s, opacity 0.3s;
+}
+
+.export-button:hover {
+    background-color: #36a476;
+}
+
+.export-button:disabled {
+    background-color: #a5d6c4;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 /* 控制面板响应式设计 */
@@ -331,7 +414,6 @@ select {
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 16px;
-    /* 移动端更友好的字体大小 */
     width: 100%;
     max-width: 180px;
     box-sizing: border-box;
@@ -345,9 +427,7 @@ input[type="number"] {
 .table-container {
     width: 100%;
     overflow-x: auto;
-    /* 允许在小屏幕上水平滚动 */
     -webkit-overflow-scrolling: touch;
-    /* 提升iOS滚动体验 */
 }
 
 table {
@@ -455,7 +535,19 @@ a:hover {
     }
 
     h2 {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
+        /* 调整标题大小以适应按钮 */
+    }
+
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .export-button {
+        padding: 6px 12px;
+        font-size: 0.8rem;
     }
 
     label {
