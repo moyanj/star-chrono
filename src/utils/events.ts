@@ -20,6 +20,19 @@ export interface EventItem {
     version: string;
 }
 
+function perVersion(version: string, start: dayjs.Dayjs, events: EventItem[]) {
+     for (const eventName in EVENT_OFFSETS) {
+            const offset = EVENT_OFFSETS[eventName];
+            const eventDate = start.add(offset, 'day');
+            events.push({
+                date: eventDate.format("YYYY-MM-DD"),
+                event: `${version} ${eventName}`,
+                version: version
+            });
+        }
+    return events;
+}
+
 /**
  * 生成精确的版本事件预测
  * @param startVersion 起始版本号 (e.g. "3.3")
@@ -28,20 +41,9 @@ export interface EventItem {
  * @returns 排序后的事件列表
  */
 export function generateVersionEvents(startVersion: string, startDate: string, numVersions: number): EventItem[] {
-    const events: EventItem[] = [];
+    const events: EventItem[] = perVersion(startVersion, dayjs(startDate), []);
     let currentDate = dayjs(startDate);
     let [major, minor] = startVersion.split(".").map(Number);
-
-    // 添加起始版本
-    events.push({ date: startDate, event: `${major}.${minor} 版本开启`, version: `${major}.${minor}` });
-
-    // 添加起始版本的下半开启
-    const lowerHalf = currentDate.add(21, 'day');
-    events.push({
-        date: lowerHalf.format("YYYY-MM-DD"),
-        event: `${major}.${minor} 下半开启`,
-        version: `${major}.${minor}` 
-    });
 
     // 生成后续版本
     for (let i = 0; i < numVersions; i++) {
@@ -56,23 +58,12 @@ export function generateVersionEvents(startVersion: string, startDate: string, n
         const nextVersion = `${major}.${minor}`;
         const nextStart = currentDate.add(42, 'day'); // 完整版本周期
 
-        // 如果版本号是 "1.7", "1.8", "2.8" 则跳过所有事件
+        // 如果版本号是 "1.7", "1.8", "2.8" 则跳过
         if (["1.7", "1.8", "2.8"].includes(nextVersion)) {
-            // currentDate = nextStart; // 仍然需要更新当前日期，以便后续版本基于正确的时间点计算
             continue;
         }
+        perVersion(nextVersion, nextStart, events);
 
-        // 生成事件
-        for (const eventName in EVENT_OFFSETS) {
-            const offset = EVENT_OFFSETS[eventName];
-            const eventDate = nextStart.add(offset, 'day');
-            events.push({
-                date: eventDate.format("YYYY-MM-DD"),
-                event: `${nextVersion} ${eventName}`,
-                version: nextVersion
-            });
-        }
-        
         currentDate = nextStart; // 更新当前版本开启日期，用于下一个版本的计算
     }
 
