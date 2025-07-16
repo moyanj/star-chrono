@@ -279,7 +279,7 @@ async function exportToImage(element: HTMLElement | null, filenamePrefix: string
             </section>
         </div>
         <div align="center">
-            <p>© 2025 <a href="https://github.com/moyanj">MoYanj</a> | <a
+            <p class="footer">© 2025 <a href="https://github.com/moyanj">MoYanj</a> | <a
                     href="https://github.com/moyanj/star-chrono">GitHub</a></p>
         </div>
     </div>

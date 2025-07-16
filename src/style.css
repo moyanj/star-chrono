@@ -367,3 +367,8 @@ tbody tr:nth-child(n+6) {
     opacity: 1 !important;
     /* 确保所有元素完全可见 */
 }
+
+.footer {
+    text-align: center;
+    font-style: normal !important;
+}
