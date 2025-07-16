@@ -58,7 +58,7 @@ export function generateVersionEvents(startVersion: string, startDate: string, n
 
         // 如果版本号是 "1.7", "1.8", "2.8" 则跳过所有事件
         if (["1.7", "1.8", "2.8"].includes(nextVersion)) {
-            currentDate = nextStart; // 仍然需要更新当前日期，以便后续版本基于正确的时间点计算
+            // currentDate = nextStart; // 仍然需要更新当前日期，以便后续版本基于正确的时间点计算
             continue;
         }
 
