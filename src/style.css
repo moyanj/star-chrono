@@ -359,3 +359,11 @@ tbody tr:nth-child(n+6) {
         transform: translateX(0);
     }
 }
+
+/* 导出时禁用动画，确保截图的准确性 */
+.is-exporting .section,
+.is-exporting tbody tr {
+    animation: none !important;
+    opacity: 1 !important;
+    /* 确保所有元素完全可见 */
+}

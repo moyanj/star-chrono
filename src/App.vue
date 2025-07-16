@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, type ComputedRef, type Ref } from 'vue';
+import { ref, computed, onMounted, type ComputedRef, type Ref, nextTick } from 'vue';
 import { generateVersionEvents, type EventItem, INITIAL_START_VERSION, INITIAL_START_DATE, EVENT_OFFSETS } from './utils/events';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -92,32 +92,36 @@ const eventTypeTableRef = ref<HTMLElement | null>(null);
 async function exportToImage(element: HTMLElement | null, filenamePrefix: string) {
     console.log('导出图片');
     if (!element || isExporting.value) return;
+
     isExporting.value = true;
+    // 等待DOM更新，确保 .is-exporting 类被应用，从而禁用动画
+    await nextTick();
+
     try {
-        html2canvas(element, {
+        const canvas = await html2canvas(element, {
             backgroundColor: '#ffffff', // 设置背景色以防透明
             scale: 2, // 提高清晰度
             useCORS: true, // 允许跨域
-        }).then(canvas => {
-            console.log('导出图片完成');
-            const link = document.createElement('a');
-            const timestamp = dayjs().format('YYYYMMDD-HHmmss');
-            link.href = canvas.toDataURL('image/png');
-            link.download = `${filenamePrefix}_${timestamp}.png`;
-            link.click();
         });
 
+        console.log('导出图片完成');
+        const link = document.createElement('a');
+        const timestamp = dayjs().format('YYYYMMDD-HHmmss');
+        link.href = canvas.toDataURL('image/png');
+        link.download = `${filenamePrefix}_${timestamp}.png`;
+        link.click();
     } catch (error) {
         console.error('导出图片失败:', error);
         alert('导出图片失败，请查看控制台获取更多信息。');
     } finally {
+        // 确保在所有操作（包括异步的canvas生成）完成后重置状态
         isExporting.value = false;
     }
 }
 </script>
 
 <template>
-    <div class="container">
+    <div class="container" :class="{ 'is-exporting': isExporting }">
         <h1>StarChrono - 星穹事件簿</h1>
 
         <div class="tabs">
