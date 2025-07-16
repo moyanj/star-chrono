@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, type ComputedRef, type Ref, nextTick } from 'vue';
+import { ref, computed, onMounted, type ComputedRef, type Ref, nextTick, watch } from 'vue';
 import { generateVersionEvents, type EventItem, INITIAL_START_VERSION, INITIAL_START_DATE, EVENT_OFFSETS } from './utils/events';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -12,6 +12,9 @@ const allEvents = ref<EventItem[]>([]); // 存储所有生成的事件
 
 // 标签页控制
 const activeTab = ref('future'); // 默认激活 'future' 标签页
+if (localStorage.getItem('activeTab')) {
+    activeTab.value = localStorage.getItem('activeTab') as string;
+}
 
 // 1. 查看未来事件
 const futureYears = ref(1); // 默认未来一年
@@ -76,6 +79,10 @@ const eventTypeEvents: ComputedRef<EventItem[]> = computed(() => {
 onMounted(() => {
     allEvents.value = generateVersionEvents(INITIAL_START_VERSION, INITIAL_START_DATE, 5026);
 });
+
+watch(activeTab, () => {
+    localStorage.setItem('activeTab', activeTab.value);
+})
 
 // --- 辅助函数 ---
 function setTab(tabName: string) {
