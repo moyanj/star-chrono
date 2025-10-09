@@ -11,8 +11,8 @@
     "type-check": "vue-tsc --build"
   },
   "dependencies": {
+    "@zumer/snapdom": "^1.9.14",
     "dayjs": "^1.11.13",
-    "html2canvas": "^1.4.1",
     "vue": "^3.5.17"
   },
   "devDependencies": {

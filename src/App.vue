@@ -3,7 +3,7 @@ import { ref, computed, onMounted, type ComputedRef, type Ref, nextTick, watch }
 import { generateVersionEvents, type EventItem, INITIAL_START_VERSION, INITIAL_START_DATE, EVENT_OFFSETS } from './utils/events';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
-import html2canvas from 'html2canvas';
+import { snapdom } from '@zumer/snapdom';
 
 dayjs.extend(isSameOrAfter);
 
@@ -105,18 +105,20 @@ async function exportToImage(element: HTMLElement | null, filenamePrefix: string
     await nextTick();
 
     try {
-        const canvas = await html2canvas(element, {
+        const result = await snapdom(element, {
             backgroundColor: '#ffffff', // 设置背景色以防透明
+            type: 'jpg',
             scale: 2, // 提高清晰度
-            useCORS: true, // 允许跨域
         });
 
         console.log('导出图片完成');
         const link = document.createElement('a');
         const timestamp = dayjs().format('YYYYMMDD-HHmmss');
-        link.href = canvas.toDataURL('image/png');
-        link.download = `${filenamePrefix}_${timestamp}.png`;
+        const blob = await result.toBlob();
+        link.href = URL.createObjectURL(blob);
+        link.download = `${filenamePrefix}_${timestamp}.jpg`;
         link.click();
+        URL.revokeObjectURL(link.href); // 清理创建的对象URL
     } catch (error) {
         console.error('导出图片失败:', error);
         alert('导出图片失败，请查看控制台获取更多信息。');
