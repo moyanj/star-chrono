@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, type ComputedRef, type Ref, nextTick, watch } from 'vue';
+import { ref, computed, onMounted, nextTick, watch, type ComputedRef } from 'vue';
 import { generateVersionEvents, type EventItem, INITIAL_START_VERSION, INITIAL_START_DATE, EVENT_OFFSETS } from './utils/events';
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
@@ -7,40 +7,55 @@ import { snapdom } from '@zumer/snapdom';
 
 dayjs.extend(isSameOrAfter);
 
+// --- 类型定义 ---
+type TabName = 'future' | 'version' | 'date' | 'eventType';
+type ExportElementRef = HTMLElement | null;
+
 // --- 响应式数据 ---
-const allEvents = ref<EventItem[]>([]); // 存储所有生成的事件
+const allEvents = ref<EventItem[]>([]);
+const isExporting = ref(false);
 
 // 标签页控制
-const activeTab = ref('future'); // 默认激活 'future' 标签页
-if (localStorage.getItem('activeTab')) {
-    activeTab.value = localStorage.getItem('activeTab') as string;
+const activeTab = ref<TabName>('future');
+const storedTab = localStorage.getItem('activeTab') as TabName;
+if (storedTab && ['future', 'version', 'date', 'eventType'].includes(storedTab)) {
+    activeTab.value = storedTab;
 }
 
-// 1. 查看未来事件
-const futureYears = ref(1); // 默认未来一年
+// 查询参数
+const futureYears = ref(1);
+const inputVersion = ref('');
+const inputDate = ref(dayjs().format('YYYY-MM-DD'));
+const dateRangeYears = ref(1);
+const selectedEventType = ref('');
+const timeFrameYears = ref(1);
+
+// DOM引用
+const futureTableRef = ref<ExportElementRef>(null);
+const versionTableRef = ref<ExportElementRef>(null);
+const dateTableRef = ref<ExportElementRef>(null);
+const eventTypeTableRef = ref<ExportElementRef>(null);
+
+// --- 计算属性 ---
+const eventTypes = computed(() => Object.keys(EVENT_OFFSETS));
+
 const futureEvents: ComputedRef<EventItem[]> = computed(() => {
     const today = dayjs().startOf('day');
     const endDate = today.add(futureYears.value, 'year').endOf('day');
-    return allEvents.value.filter((event: EventItem) => {
-        const eventDate = dayjs(event.date);
-        return eventDate.isSameOrAfter(today) && eventDate.isBefore(endDate);
-    }).sort((a: EventItem, b: EventItem) => dayjs(a.date).diff(dayjs(b.date)));
+
+    return filterAndSortEvents(
+        event => isDateInRange(event.date, today, endDate)
+    );
 });
 
-// 2. 按版本号查询
-const inputVersion = ref('');
 const versionEvents: ComputedRef<EventItem[]> = computed(() => {
-    if (!inputVersion.value || !inputVersion.value.includes(".") || inputVersion.value.length < 3) return [];
+    if (!isValidVersion(inputVersion.value)) return [];
 
-    return allEvents.value.filter((event: EventItem) => {
-        return event.version.startsWith(inputVersion.value)
-    }
-    ).sort((a: EventItem, b: EventItem) => dayjs(a.date).diff(dayjs(b.date)));
+    return filterAndSortEvents(
+        event => event.version.startsWith(inputVersion.value)
+    );
 });
 
-// 3. 按日期范围查询
-const inputDate = ref(dayjs().format('YYYY-MM-DD')); // 默认为今天
-const dateRangeYears = ref(1); // 默认前后一年
 const dateRangeEvents: ComputedRef<EventItem[]> = computed(() => {
     if (!inputDate.value) return [];
 
@@ -48,18 +63,10 @@ const dateRangeEvents: ComputedRef<EventItem[]> = computed(() => {
     const startDate = targetDate.subtract(dateRangeYears.value, 'year').startOf('day');
     const endDate = targetDate.add(dateRangeYears.value, 'year').endOf('day');
 
-    return allEvents.value.filter((event: EventItem) => {
-        const eventDate = dayjs(event.date);
-        return eventDate.isSameOrAfter(startDate) && eventDate.isBefore(endDate);
-    }).sort((a: EventItem, b: EventItem) => dayjs(a.date).diff(dayjs(b.date)));
+    return filterAndSortEvents(
+        event => isDateInRange(event.date, startDate, endDate)
+    );
 });
-
-// 4. 按事件类型筛选
-const eventTypes = computed(() => {
-    return Object.keys(EVENT_OFFSETS);
-});
-const selectedEventType = ref(''); // 默认不选择任何事件类型
-const timeFrameYears = ref(1); // 默认查看未来一年内所选事件类型的事件
 
 const eventTypeEvents: ComputedRef<EventItem[]> = computed(() => {
     if (!selectedEventType.value) return [];
@@ -67,66 +74,91 @@ const eventTypeEvents: ComputedRef<EventItem[]> = computed(() => {
     const today = dayjs().startOf('day');
     const endDate = today.add(timeFrameYears.value, 'year').endOf('day');
 
-    return allEvents.value.filter((event: EventItem) => {
-        const eventDate = dayjs(event.date);
-        return eventDate.isSameOrAfter(today) &&
-            eventDate.isBefore(endDate) &&
-            event.event.includes(selectedEventType.value);
-    }).sort((a: EventItem, b: EventItem) => dayjs(a.date).diff(dayjs(b.date)));
+    return filterAndSortEvents(
+        event => isDateInRange(event.date, today, endDate) &&
+            event.event.includes(selectedEventType.value)
+    );
 });
 
-// --- 生命周期钩子 ---
+// --- 工具函数 ---
+const filterAndSortEvents = (filterFn: (event: EventItem) => boolean): EventItem[] => {
+    return allEvents.value
+        .filter(filterFn)
+        .sort((a, b) => dayjs(a.date).diff(dayjs(b.date)));
+};
+
+const isDateInRange = (date: string, start: dayjs.Dayjs, end: dayjs.Dayjs): boolean => {
+    const eventDate = dayjs(date);
+    return eventDate.isSameOrAfter(start) && eventDate.isBefore(end);
+};
+
+const isValidVersion = (version: string): boolean => {
+    return version.includes('.') && version.length >= 3;
+};
+
+// --- 生命周期和监听器 ---
 onMounted(() => {
     allEvents.value = generateVersionEvents(INITIAL_START_VERSION, INITIAL_START_DATE, 5026);
 });
 
-watch(activeTab, () => {
-    localStorage.setItem('activeTab', activeTab.value);
-})
+watch(activeTab, (newTab) => {
+    localStorage.setItem('activeTab', newTab);
+});
 
-// --- 辅助函数 ---
-function setTab(tabName: string) {
+// --- 操作方法 ---
+const setTab = (tabName: TabName): void => {
     activeTab.value = tabName;
-}
+};
 
-// --- 图片导出功能 ---
-const isExporting = ref(false);
-const futureTableRef = ref<HTMLElement | null>(null);
-const versionTableRef = ref<HTMLElement | null>(null);
-const dateTableRef = ref<HTMLElement | null>(null);
-const eventTypeTableRef = ref<HTMLElement | null>(null);
-
-async function exportToImage(element: HTMLElement | null, filenamePrefix: string) {
-    console.log('导出图片');
+const exportToImage = async (element: ExportElementRef, filenamePrefix: string): Promise<void> => {
     if (!element || isExporting.value) return;
 
     isExporting.value = true;
-    // 等待DOM更新，确保 .is-exporting 类被应用，从而禁用动画
-    await nextTick();
 
     try {
+        await nextTick();
+
         const result = await snapdom(element, {
-            backgroundColor: '#ffffff', // 设置背景色以防透明
-            type: 'jpg',
-            scale: 2, // 提高清晰度
+            backgroundColor: '#ffffff',
+            type: 'jpg' as const,
+            scale: 2,
         });
 
-        console.log('导出图片完成');
-        const link = document.createElement('a');
         const timestamp = dayjs().format('YYYYMMDD-HHmmss');
         const blob = await result.toBlob();
+        const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
         link.download = `${filenamePrefix}_${timestamp}.jpg`;
         link.click();
-        URL.revokeObjectURL(link.href); // 清理创建的对象URL
+
+        URL.revokeObjectURL(link.href);
     } catch (error) {
         console.error('导出图片失败:', error);
         alert('导出图片失败，请查看控制台获取更多信息。');
     } finally {
-        // 确保在所有操作（包括异步的canvas生成）完成后重置状态
         isExporting.value = false;
     }
-}
+};
+
+// --- 导出处理函数 ---
+const handleFutureExport = (): void => {
+    exportToImage(futureTableRef.value, '未来事件');
+};
+
+const handleVersionExport = (): void => {
+    const versionSuffix = inputVersion.value ? `版本_${inputVersion.value}` : '版本';
+    exportToImage(versionTableRef.value, versionSuffix);
+};
+
+const handleDateExport = (): void => {
+    const dateSuffix = inputDate.value ? `日期范围_${inputDate.value}` : '日期范围';
+    exportToImage(dateTableRef.value, dateSuffix);
+};
+
+const handleEventTypeExport = (): void => {
+    const eventSuffix = selectedEventType.value ? `事件类型_${selectedEventType.value}` : '事件类型';
+    exportToImage(eventTypeTableRef.value, eventSuffix);
+};
 </script>
 
 <template>
