@@ -21,15 +21,24 @@ export interface EventItem {
 }
 
 function perVersion(version: string, start: dayjs.Dayjs, events: EventItem[]) {
-     for (const eventName in EVENT_OFFSETS) {
-            const offset = EVENT_OFFSETS[eventName];
-            const eventDate = start.add(offset, 'day');
+    for (const eventName in EVENT_OFFSETS) {
+        if (version === "3.7" && eventName === "预下载") {
+            // 3.7 版本预下载事件特殊处理
             events.push({
-                date: eventDate.format("YYYY-MM-DD"),
+                date: dayjs("2025-11-4").format("YYYY-MM-DD"),
                 event: `${version} ${eventName}`,
                 version: version
             });
+            continue;
         }
+        const offset = EVENT_OFFSETS[eventName];
+        const eventDate = start.add(offset, 'day');
+        events.push({
+            date: eventDate.format("YYYY-MM-DD"),
+            event: `${version} ${eventName}`,
+            version: version
+        });
+    }
     return events;
 }
 
