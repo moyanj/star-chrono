@@ -26,7 +26,7 @@ function perVersion(version: string, start: dayjs.Dayjs, events: EventItem[]) {
             // 3.7 版本预下载事件特殊处理
             events.push({
                 date: dayjs("2025-11-4").format("YYYY-MM-DD"),
-                event: `${version} ${eventName}`,
+                event: `${eventName}`,
                 version: version
             });
             continue;
@@ -35,7 +35,7 @@ function perVersion(version: string, start: dayjs.Dayjs, events: EventItem[]) {
         const eventDate = start.add(offset, 'day');
         events.push({
             date: eventDate.format("YYYY-MM-DD"),
-            event: `${version} ${eventName}`,
+            event: `${eventName}`,
             version: version
         });
     }

@@ -4,6 +4,7 @@ import { generateVersionEvents, type EventItem, INITIAL_START_VERSION, INITIAL_S
 import dayjs from 'dayjs';
 import isSameOrAfter from 'dayjs/plugin/isSameOrAfter';
 import { snapdom } from '@zumer/snapdom';
+import EventList from './EventList.vue';
 
 dayjs.extend(isSameOrAfter);
 
@@ -98,7 +99,8 @@ const isValidVersion = (version: string): boolean => {
 
 // --- 生命周期和监听器 ---
 onMounted(() => {
-    allEvents.value = generateVersionEvents(INITIAL_START_VERSION, INITIAL_START_DATE, 5026);
+    allEvents.value = generateVersionEvents(INITIAL_START_VERSION, INITIAL_START_DATE, 5026); // 直到2600年12月24日 559.4版本 下半开启
+    console.log(allEvents.value);
 });
 
 watch(activeTab, (newTab) => {
@@ -139,26 +141,6 @@ const exportToImage = async (element: ExportElementRef, filenamePrefix: string):
         isExporting.value = false;
     }
 };
-
-// --- 导出处理函数 ---
-const handleFutureExport = (): void => {
-    exportToImage(futureTableRef.value, '未来事件');
-};
-
-const handleVersionExport = (): void => {
-    const versionSuffix = inputVersion.value ? `版本_${inputVersion.value}` : '版本';
-    exportToImage(versionTableRef.value, versionSuffix);
-};
-
-const handleDateExport = (): void => {
-    const dateSuffix = inputDate.value ? `日期范围_${inputDate.value}` : '日期范围';
-    exportToImage(dateTableRef.value, dateSuffix);
-};
-
-const handleEventTypeExport = (): void => {
-    const eventSuffix = selectedEventType.value ? `事件类型_${selectedEventType.value}` : '事件类型';
-    exportToImage(eventTypeTableRef.value, eventSuffix);
-};
 </script>
 
 <template>
@@ -195,23 +177,7 @@ const handleEventTypeExport = (): void => {
                     <input type="number" id="futureYears" v-model.number="futureYears" min="0" step="1">
                     年内的事件
                 </div>
-                <div v-if="futureEvents.length" class="table-container" ref="futureTableRef">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>日期</th>
-                                <th>版本事件</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="event in futureEvents" :key="event.date + event.event">
-                                <td>{{ event.date }}</td>
-                                <td>{{ event.event }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p v-else>暂无未来事件数据。</p>
+                <event-list :future-events="futureEvents" ref="futureTableRef" />
             </section>
 
             <!-- 按版本号查询 -->
@@ -262,23 +228,7 @@ const handleEventTypeExport = (): void => {
                     <input type="number" id="dateRangeYears" v-model.number="dateRangeYears" min="0" step="1">
                     年内的事件
                 </div>
-                <div v-if="dateRangeEvents.length" class="table-container" ref="dateTableRef">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>日期</th>
-                                <th>版本事件</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="event in dateRangeEvents" :key="event.date + event.event">
-                                <td>{{ event.date }}</td>
-                                <td>{{ event.event }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p v-else>请输入日期和范围，或该日期范围内暂无事件。</p>
+                <event-list :future-events="dateRangeEvents" ref="dateTableRef" />
             </section>
 
             <!-- 按事件类型筛选 -->
@@ -300,23 +250,7 @@ const handleEventTypeExport = (): void => {
                     <input type="number" id="timeFrameYears" v-model.number="timeFrameYears" min="1" step="1">
                     年内的事件
                 </div>
-                <div v-if="eventTypeEvents.length" class="table-container" ref="eventTypeTableRef">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>日期</th>
-                                <th>版本事件</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="event in eventTypeEvents" :key="event.date + event.event">
-                                <td>{{ event.date }}</td>
-                                <td>{{ event.event }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p v-else>请选择事件类型或该事件类型暂无未来事件。</p>
+                <event-list :future-events="eventTypeEvents" ref="eventTypeTableRef" />
             </section>
         </div>
         <div align="center">
