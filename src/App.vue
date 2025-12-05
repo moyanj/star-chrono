@@ -10,7 +10,7 @@ dayjs.extend(isSameOrAfter);
 
 // --- 类型定义 ---
 type TabName = 'future' | 'version' | 'date' | 'eventType';
-type ExportElementRef = HTMLElement | null;
+type ExportElementRef = InstanceType<typeof EventList> | null;
 
 // --- 响应式数据 ---
 const allEvents = ref<EventItem[]>([]);
@@ -112,28 +112,13 @@ const setTab = (tabName: TabName): void => {
     activeTab.value = tabName;
 };
 
-const exportToImage = async (element: ExportElementRef, filenamePrefix: string): Promise<void> => {
+const exportToImage = async (element: InstanceType<typeof EventList> | null, filenamePrefix: string): Promise<void> => {
     if (!element || isExporting.value) return;
 
     isExporting.value = true;
 
     try {
-        await nextTick();
-
-        const result = await snapdom(element, {
-            backgroundColor: '#ffffff',
-            type: 'jpg' as const,
-            scale: 2,
-        });
-
-        const timestamp = dayjs().format('YYYYMMDD-HHmmss');
-        const blob = await result.toBlob();
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `${filenamePrefix}_${timestamp}.jpg`;
-        link.click();
-
-        URL.revokeObjectURL(link.href);
+        element.download_img(filenamePrefix);
     } catch (error) {
         console.error('导出图片失败:', error);
         alert('导出图片失败，请查看控制台获取更多信息。');

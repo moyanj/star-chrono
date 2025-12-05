@@ -1,12 +1,37 @@
 <script setup lang="ts">
+import { nextTick, ref } from 'vue';
 import { type EventItem } from './utils/events';
+import { snapdom } from '@zumer/snapdom';
+import dayjs from 'dayjs';
 defineProps<{
     futureEvents: EventItem[];
 }>();
+const refa = ref();
+async function download_img(filenamePrefix: string) {
+    await nextTick();
+    const result = await snapdom(refa.value, {
+        backgroundColor: '#ffffff',
+        type: 'jpg' as const,
+        scale: 2,
+    });
+
+    const timestamp = dayjs().format('YYYYMMDD-HHmmss');
+    const blob = await result.toBlob();
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${filenamePrefix}_${timestamp}.jpg`;
+    link.click();
+
+    URL.revokeObjectURL(link.href);
+}
+defineExpose({
+    download_img
+});
+
 </script>
 
 <template>
-    <div class="table-container">
+    <div class="table-container" ref="refa">
         <table v-if="futureEvents.length">
             <thead>
                 <tr>
