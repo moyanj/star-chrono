@@ -193,23 +193,7 @@ const exportToImage = async (element: ExportElementRef, filenamePrefix: string):
                     <label for="inputVersion">输入版本号 (如: 2.0): </label>
                     <input type="text" id="inputVersion" v-model="inputVersion" placeholder="例: 2.0">
                 </div>
-                <div v-if="versionEvents.length" class="table-container" ref="versionTableRef">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>日期</th>
-                                <th>版本事件</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="event in versionEvents" :key="event.date + event.event">
-                                <td>{{ event.date }}</td>
-                                <td>{{ event.event }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <p v-else>请输入版本号或该版本暂无事件。</p>
+                <event-list :future-events="versionEvents" ref="versionTableRef" />
             </section>
 
             <!-- 按日期范围查询 -->

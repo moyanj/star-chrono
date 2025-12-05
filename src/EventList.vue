@@ -17,7 +17,7 @@ defineProps<{
             <tbody>
                 <tr v-for="event in futureEvents" :key="event.date + event.event">
                     <td>{{ event.date }}</td>
-                    <td>{{ event.event }}</td>
+                    <td>{{ event.version }} {{ event.event }}</td>
                 </tr>
             </tbody>
         </table>
