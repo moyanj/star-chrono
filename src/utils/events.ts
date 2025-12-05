@@ -65,7 +65,13 @@ export function generateVersionEvents(startVersion: string, startDate: string, n
         }
 
         const nextVersion = `${major}.${minor}`;
-        const nextStart = currentDate.add(42, 'day'); // 完整版本周期
+        // 特殊处理3.8版本：56天周期
+        let daysToNextVersion = 42; // 默认版本周期
+        if (nextVersion === "3.8") {
+            daysToNextVersion = 56; // 3.8版本有56天
+        }
+
+        const nextStart = currentDate.add(daysToNextVersion, 'day'); // 版本周期
 
         // 如果版本号是 "1.7", "1.8", "2.8" 则跳过
         if (["1.7", "1.8", "2.8"].includes(nextVersion)) {
