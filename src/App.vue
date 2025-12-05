@@ -99,8 +99,8 @@ const isValidVersion = (version: string): boolean => {
 
 // --- 生命周期和监听器 ---
 onMounted(() => {
-    allEvents.value = generateVersionEvents(INITIAL_START_VERSION, INITIAL_START_DATE, 5026); // 直到2600年12月24日 559.4版本 下半开启
-    console.log(allEvents.value);
+    allEvents.value = generateVersionEvents(INITIAL_START_VERSION, INITIAL_START_DATE, 200); // 直到2600年12月24日 559.4版本 下半开启
+    console.log(allEvents.value[allEvents.value.length - 1]); // 输出最后一个事件，便于调试
 });
 
 watch(activeTab, (newTab) => {
