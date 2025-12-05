@@ -31,11 +31,32 @@ function perVersion(version: string, start: dayjs.Dayjs, events: EventItem[]) {
             });
             continue;
         }
+        if (version === "3.8" && eventName === "下半开启") {
+            // 已批量处理 3.8 版本特殊情况
+            continue;
+        }
+        var note = "";
+        if (version === "3.8" && !["版本开启", "中半开启", "下半开启", "前瞻特别节目"].includes(eventName)) {
+            note = "（尚未确认）";
+        }
         const offset = EVENT_OFFSETS[eventName];
         const eventDate = start.add(offset, 'day');
         events.push({
             date: eventDate.format("YYYY-MM-DD"),
-            event: `${eventName}`,
+            event: `${eventName} ${note}`,
+            version: version
+        });
+    }
+    if (version === "3.8") {
+        // 3.8版本特殊处理
+        events.push({
+            date: dayjs("2026-01-07").format("YYYY-MM-DD"),
+            event: `中半开启`,
+            version: version
+        });
+        events.push({
+            date: dayjs("2026-01-28").format("YYYY-MM-DD"),
+            event: `下半开启`,
             version: version
         });
     }
