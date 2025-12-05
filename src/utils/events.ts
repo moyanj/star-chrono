@@ -67,7 +67,7 @@ export function generateVersionEvents(startVersion: string, startDate: string, n
         const nextVersion = `${major}.${minor}`;
         // 特殊处理3.8版本：56天周期
         let daysToNextVersion = 42; // 默认版本周期
-        if (nextVersion === "3.8") {
+        if (nextVersion === "4.0") {
             daysToNextVersion = 56; // 3.8版本有56天
         }
 
